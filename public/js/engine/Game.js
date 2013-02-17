@@ -1,24 +1,90 @@
 function Game()
 {
+	Debugger.call(this, "game"); 
+	this.DEBUGMODE = true; 
+
 	
-	this.Content = new Content(); 
+	var callBackBuildListIndex = 0; 
+	this.CallBackBuildList = new Array(); 
 
-	this.activeScreen = null
+	
 
-	this.gameScreen = new GameScreen();
-	this.laodScreen = new LoadScreen(); 
+	
+	var clock = null; 
+	var delta = null; 
 
+ 	//=============== Init & Call Backs ============================
 	this.Init = function()
 	{
-		
-		Console.log("Initialize");
-		Content.Load(this.LoadFinished());
+		this.debug("initialize. start loading content");
+		clock = new THREE.Clock();
+ 		delta = 0;		
+
+ 		this.activeView = this.loadView;//TO FIX: LoadView and Model building twice.  
+ 		this.activeModel = this.loadModel; 
+		//start clock tick
+
+		this.CallBackBuildList[0].Build(); 
 	}
+
+	//called after a view or model finishes  building. Builds the next object in the list.  
+	this.BuildCallBack = function()
+	{
+		
+		callBackBuildListIndex++; 
+		if(callBackBuildListIndex ==  this.CallBackBuildList.length)
+		{
+			this.Start(); 
+		}
+		else
+		{
+			this.CallBackBuildList[callBackBuildListIndex].Build(); 
+		}
+	}
+
+	//adds an object to the build list
+	this.AddToBuildList = function( _toBuild )
+	{
+		this.CallBackBuildList[this.CallBackBuildList.length] = _toBuild; 
+	}
+
+
+	//starts the game
+	this.Start = function()
+	{
+		this.debug("done building. starting game..."); 
+		this.activeView = this.gameView; 
+		
+		
+
+	}
+
+
+	//=============== Main Loop ============================
+	var OnTick = function()
+	{
+
+
+
+	}
+
+
+//------------- Load View/Model ---------------------
+	this.loadView = new LoadView(this)
+	this.loadModel = new LoadModel(this);
+
+	//------------- Content -----------------------------
+	this.gamecontent = new Content(this); 
+
+	//------------- Views ------------------------------
+	this.activeView = null; 
+	this.gameView = new GameView(this);
+	//this.menuView = new menuView(this); for example.  
+
+	//------------- Models ------------------------------
+	this.activeModel = null; 
+	this.gameModel = new GameModel(this); 
+	//this.mainMenu = new menuModel(this); for exampe
 
 	
-	this.LoadFinished = function()
-	{
-		Console.log("LoadFinished game");
-
-	}
 }
