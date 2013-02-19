@@ -1,7 +1,7 @@
-function LoadView(_game)
+function loadScreenView(_game)
 {
 	View.call(this, _game);
-	Debugger.call(this, "loadingView"); 
+	Debugger.call(this, "loadScreenView"); 
 	this.DEBUGMODE = true; 
 
 

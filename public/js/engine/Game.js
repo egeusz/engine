@@ -7,9 +7,6 @@ function Game()
 	var callBackBuildListIndex = 0; 
 	this.CallBackBuildList = new Array(); 
 
-	
-
-	
 	var clock = null; 
 	var delta = null; 
 
@@ -27,14 +24,14 @@ function Game()
 		this.CallBackBuildList[0].Build(); 
 	}
 
-	//called after a view or model finishes  building. Builds the next object in the list.  
+	//called after a view or model finishes building. Builds the next object in the list.  
 	this.BuildCallBack = function()
 	{
 		
 		callBackBuildListIndex++; 
 		if(callBackBuildListIndex ==  this.CallBackBuildList.length)
 		{
-			this.Start(); 
+			this.Start();//all aobjects are built start game.
 		}
 		else
 		{
@@ -70,8 +67,8 @@ function Game()
 
 
 //------------- Load View/Model ---------------------
-	this.loadView = new LoadView(this)
-	this.loadModel = new LoadModel(this);
+	this.loadScreenView = new loadScreenView(this)
+	this.loadScreenModel = new loadScreenModel(this);
 
 	//------------- Content -----------------------------
 	this.gamecontent = new Content(this); 

@@ -1,7 +1,7 @@
-function LoadModel(_game)
+function loadScreenModel(_game)
 {
 	Model.call(this, _game);
-	Debugger.call(this, "loadingModel"); 
+	Debugger.call(this, "loadScreenModel"); 
 	this.DEBUGMODE = true; 
 	
 

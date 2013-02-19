@@ -3,7 +3,7 @@ function View( _game )
 	Debugger.call(this, "view"); 
 	this.DEBUGMODE = true; 
 
-	this.debug(_game.NullTest()); 
+	//this.debug(_game.NullTest()); 
 	_game.AddToBuildList(this); 
 
 
