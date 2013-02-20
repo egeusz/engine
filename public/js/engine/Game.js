@@ -85,3 +85,6 @@ function Game()
 
 	
 }
+
+
+//look up Minkowski Sum
