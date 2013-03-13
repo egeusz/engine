@@ -1,3 +1,5 @@
+//Prefs contains locations for root directories as well as other global settings
+
 var publicRoot    = "./public"; 
 function getPublicRootDir()
 {

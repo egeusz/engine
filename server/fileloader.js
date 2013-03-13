@@ -2,6 +2,7 @@ var fs = require("fs");
 
 var prefs = require("./prefs"); 
 
+//-------- Map of all accepted mime tipes for file extensions
 var MIMETypeMap = new Array(); 
 MIMETypeMap[".html"] 	= "text/html"; 
 MIMETypeMap[".css"] 	= "text/css"; 
@@ -13,16 +14,10 @@ MIMETypeMap[".jpg"] 	= "image/jpeg";
 MIMETypeMap[".gif"] 	= "image/gif"; 
 MIMETypeMap[".ico"] 	= "image/vnd.microsoft.icon"; 
 
-
-
-
 //------ loads the file at given path
 function GetFile(response, _path)
 {
-
 	ParseFileType(response, prefs.getPublicRootDir()+_path);
-
-
 }
 
 //------ Checks if file exsists, then tries to figure out the file type, finds the MIMEtype and calls LoadFile. returns 404 if file doesnot exsist or file type not matched to MIME type. 
@@ -52,13 +47,9 @@ function ParseFileType(response, _path)
       {
       	console.log("<- file not found for " + _path); 
       	Error404(response); 
-
       }
-
    	});
 }
-
-
 function LoadFile(response, _path, _MIMEtype)
 {
 	var file = fs.readFileSync(_path);
@@ -77,5 +68,6 @@ function Error404(response)
   response.end();
 } 
 
+//----------
 exports.Error404 = Error404; 
 exports.GetFile = GetFile; 

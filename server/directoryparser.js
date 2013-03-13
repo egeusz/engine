@@ -1,6 +1,10 @@
+//directoryparser is a fucntional abstraction for parsing a directory and performing functions on the files found inside. 
+
 var fs          = require("fs");
 
 
+//------ Fully recurses through a directory structure. When finding a file it performs the _Onfile finction. 
+//>>!! _OnFile must be a function that must accept the input parameters of _path, directory to the file, and _filename, the file's name. 
 function ParseDirectory(_path, _OnFile)
 {
   console.log("> " + _path);  
