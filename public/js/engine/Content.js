@@ -6,13 +6,13 @@ function Content(_game)
 
 	_game.AddToBuildList(this); 
 
-	var meshDirectoryPath 			= './public/content/meshes/'; 
+	var meshDirectoryPath 			= '/content/meshes/'; 
 	var meshPaths 					= new Array();
-	var textuerDirectoryPath 		= './public/content/textures/'; 
+	var textuerDirectoryPath 		= '/content/textures/'; 
 	var texturePaths 				= new Array();
-	var soundDirectoryPath	 		= './public/content/sounds/'; 
+	var soundDirectoryPath	 		= '/content/sounds/'; 
 	var soundPaths 					= new Array();
-	var modelDataDirectoryPath 		= './public/content/models/'; 
+	var modelDataDirectoryPath 		= '/content/models/'; 
 	var modelDataPaths 				= new Array();
 
 	this.meshes 		= new Array();

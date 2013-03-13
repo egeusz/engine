@@ -1,52 +1,94 @@
-var fs = require("fs");
-var fileloader = require("./fileloader"); 
+var fs          = require("fs");
 
+var prefs = require("./prefs"); 
+var dirParser   = require("./directoryparser"); 
+var fileloader  = require("./fileloader"); 
 
-function route(pathname, response) {
-  console.log("request for " + pathname);
+var builders = new Array ();
+var routes       = new Array(); 
 
-  if(pathname == "/" || pathname == "/index")
+//--------- checks the requested route with the Path arrays to make sure it is valid, then performs the path function keyed to that path. Errors 404 if path is not valid. 
+function route(_path, response) {
+  if (routes[_path] != null)
   {
-  	return fileloader.GetIndex(response);
-  }
-  else if(ParsePath(pathname, "/public/style.css"))
-  {
-  	console.log("Looking for styles");
-  	return fileloader.GetCSS( response, pathname);
-  }
-  else if(ParsePath(pathname, "/public/js"))
-  {
-  	console.log("Looking for javascript");
-  	return fileloader.GetScript( response, pathname); 
+    console.log("     request  -> " + _path);
+    routes[_path](response, _path); 
   }
   else
   {
-  	return error404(response); 
+    console.log("request error -> " + _path);
+    fileloader.Error404(response); 
   }
-
-
 }
 
-
-//writes 404 page
-function error404(response)
+function BuildRoutes()
 {
-	response.writeHead(200, {"Content-Type": "text/html"});
-  response.write("<center><p>404 Server Error</p><p>The file you requested does exsist</p></cemter>"); 
-  response.end();
+  FindPublicPaths();
+  GeneratePagePaths();
+
+  // for (p in routes)
+  // {
+  //   console.log(p);  
+  // }
 }
 
-//returns true if path starts with specified string 
-function ParsePath(_path, _pathcheck)
+
+function GeneratePagePaths()
 {
-	if(("."+_path).search(_pathcheck) == 1)
-	{
-		return true
-	}
-	return false
-
+   console.log("Getting builders at");
+   dirParser.ParseDirectory(prefs.getBuildersRootDir(), AddPagePath); 
+   routes["/"] =  builders["/index"].Build;
+   // AddPagePath("/404", fileloader.Error404); //fortesting should be removed later. 
 
 }
 
 
+
+function FindPublicPaths()
+{
+  console.log("Getting static paths at \"" + prefs.getPublicRootDir() + "\"" ); 
+  dirParser.ParseDirectory(prefs.getPublicRootDir(), AddFilePath); 
+
+  console.log("" ); 
+}
+
+
+
+
+
+
+function AddFilePath(_dirpath, _filename)
+{
+  var path = _dirpath.substring(prefs.getPublicRootDir().length) + "/"+_filename; 
+  console.log("   < " +  path);
+  routes[path] = fileloader.GetFile; 
+
+}
+
+
+function AddPagePath(_dirpath, _filename)
+{
+  var dirPathParts = _dirpath.split("/");
+  var builderRoute = ""; 
+  for(var i = 3; i < dirPathParts.length; i++)//replace with regular expression
+  {
+    builderRoute += "/"+dirPathParts[i]; 
+  }
+  var fileNameParts = _filename.split("."); 
+  builderRoute += "/"+fileNameParts[0]; 
+  
+  builders[builderRoute] = require("./builders"+builderRoute); 
+  routes[builderRoute] = builders[builderRoute].Build; 
+  
+  console.log("   < " +  builderRoute  + " : " + builderRoute + ".build()" );
+}
+
+
+
+
+
+
+
+
+exports.BuildRoutes = BuildRoutes; 
 exports.route = route;

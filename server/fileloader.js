@@ -1,6 +1,6 @@
 var fs = require("fs");
 
-var publicPath = "./public/"
+var prefs = require("./prefs"); 
 
 var MIMETypeMap = new Array(); 
 MIMETypeMap[".html"] 	= "text/html"; 
@@ -14,100 +14,68 @@ MIMETypeMap[".gif"] 	= "image/gif";
 MIMETypeMap[".ico"] 	= "image/vnd.microsoft.icon"; 
 
 
-function GetIndex(response) 
-{
-  
-	console.log("populating index");
-	response.writeHead(200, {"Content-Type": "text/html"});
-	//response.writeHead(200, {"content-type":"application/x-javascript"});
-    response.write(BuildIndexString(publicPath)); 
-    response.end();
-	return response; 
-}
 
-/*
+
+//------ loads the file at given path
 function GetFile(response, _path)
 {
-	ParseFilePath(_path);
+
+	ParseFileType(response, prefs.getPublicRootDir()+_path);
 
 
 }
 
-
-function ParseFilePath(_path)
+//------ Checks if file exsists, then tries to figure out the file type, finds the MIMEtype and calls LoadFile. returns 404 if file doesnot exsist or file type not matched to MIME type. 
+function ParseFileType(response, _path)
 {
+	
+	
+	fs.exists(_path, function (exists) {
+      if(exists)
+      {		
+      	   	var pathParts = _path.split("/");
+      	   	var filename = pathParts[pathParts.length-1]; 
+      	   	var filenameParts =  filename.split(".");
+      	   	var fileextension = "."+filenameParts[filenameParts.length-1]; 
+      	   	if (MIMETypeMap[fileextension] != null)
+      	   	{
+      	   		console.log("<- serving file " + filename); 
+      	   		LoadFile(response, _path, MIMETypeMap[fileextension]); 
+      	   	}
+      	   	else
+      	   	{
+      	   		console.log("<- Mime type not found for " + filename + " - " + fileextension); 
+      	   		Error404(response); 
+      	   	}
+      }
+      else
+      {
+      	console.log("<- file not found for " + _path); 
+      	Error404(response); 
 
+      }
 
-
+   	});
 }
 
-function 
+
+function LoadFile(response, _path, _MIMEtype)
 {
-
-
-}
-*/
-
-function GetScript(response, _path)
-{
-	var file = fs.readFileSync("."+_path);
-	response.writeHead(200, {"Content-Type": "application/javascript"});
+	var file = fs.readFileSync(_path);
+	response.writeHead(200, {"Content-Type": _MIMEtype });
   	//response.write(file); 
   	response.end(file);
-	return response;
 }
 
-function GetCSS(response, _path)
+
+//----------- writes 404 page
+function Error404(response)
 {
-	var file = fs.readFileSync("."+_path);
-	response.writeHead(200, {"Content-Type": "text/css"});
-  	//response.write(file); 
-  	response.end(file);
-	return response;
-}
+  console.log("<- serving 404 Error Mwahahahahahahahaha!"); 
+  response.writeHead(200, {"Content-Type": "text/html"});
+  response.write("<center><p>404 Server Error</p><p>The file you requested does exsist</p></cemter>"); 
+  response.end();
+} 
 
-function GetPNG(response, _path)
-{
-	 var img = fs.readFileSync("."+_path);
-     response.writeHead(200, {'Content-Type': 'image/png' });
-     response.end(img);
-     return response; 
-}
-
-
-function BuildIndexString(_pathname)
-{
-	var indexString = fs.readFileSync(_pathname+'head.html');
-	
-	indexString = GetScriptPaths( indexString, _pathname + "js/engine/"); 
-	indexString = GetScriptPaths( indexString, _pathname + "js/game/"); 
-	indexString = GetScriptPaths( indexString, _pathname + "js/lib/");
-	
- 	
- 	indexString = indexString+""+fs.readFileSync(_pathname+'body.html');
- 	
- 	return indexString; 
-
-}
-
-
-function GetScriptPaths(indexString, _path)
-{
-	console.log("getting scritps from " + _path);  
-	var files = fs.readdirSync(_path);
-	//scriptString = "<p>File Names Dynamicaly Loaded!</p>"; 
-	for (var f in files)
-	{
-		//console.log(files[f]);
-		indexString = indexString + '<script src="' + _path + files[f] + '"> </script>'; 
-	} 
-	return indexString;
-
-}
-
-
-
-exports.GetIndex = GetIndex;
-exports.GetScript = GetScript;
-exports.GetCSS = GetCSS;
-exports.GetPNG = GetPNG; 
+exports.Error404 = Error404; 
+exports.GetFile = GetFile; 
