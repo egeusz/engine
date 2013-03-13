@@ -71,3 +71,12 @@ function Error404(response)
 //----------
 exports.Error404 = Error404; 
 exports.GetFile = GetFile; 
+
+ /* Async call back loader
+  fs.readFile(path, 'utf-8', function(err, data) {
+    if (err) throw err;
+    //console.log('OK: ' + filename);
+    console.log(data); 
+  
+  });
+  */

@@ -24,23 +24,75 @@ function route(_path, response) {
 //---------- Called on server startup. Builds routes for all public files and for Builder moduals 
 function BuildRoutes()
 {
-  FindPublicPaths();
-  GenerateRoutesForBuilders();
-  // for (p in routes)
-  // {
-  //   console.log(p);  
-  // }
+  SearchForRoutes(); 
+  routes["/"] =  builders["/index"].Build; // manualy set special path for null case. set to index
+  //DisplayAllRoutes(); 
+
 }
 
 //------- recursivly searches for all static files in the public root directory, then generates routes for them and mappes them to fileloader.GetFile(); to load the file upon request
-function FindPublicPaths()
+function SearchForRoutes()
 {
   console.log("Getting static paths at \"" + prefs.getPublicRootDir() + "\"" ); 
-  dirParser.ParseDirectory(prefs.getPublicRootDir(), AddFilePath); 
+  dirParser.ParseDirectory(prefs.getPublicRootDir(), AddRoute); 
 
   console.log("" ); 
 }
 
+//------ called by dirparser when it finds a file
+function AddRoute(_dirpath, _filename)
+{
+  var nameparts = _filename.split("."); 
+  if(nameparts[1] == "builder" && nameparts[2] == "js")
+  {
+    AddBuilderRoute(_dirpath, _filename, nameparts); 
+  }
+  else
+  {
+    AddFileRoute(_dirpath, _filename); 
+  }
+
+}
+
+//------ called by AddRoute when it finds a Builder modual. Gennerates a route based upon the files directory location. It loads the modual to the builders list and then mappes it to the builders Build() function in the routes map. 
+function AddBuilderRoute(_dirpath, _filename, _nameparts)
+{
+  var path = "."+_dirpath.substring(prefs.getServerRootDir().length) + "/"+_filename; //"./server/public/dir1/dir2/" -> "./public/dir1/dir2"
+  var builderRoute = _dirpath.substring(prefs.getPublicRootDir().length) + "/"+ _nameparts[0]; 
+  var builder = require(path); 
+  builder.Setup(fs, prefs, dirParser); 
+  builders[builderRoute] = builder; 
+  routes[builderRoute] = builders[builderRoute].Build; 
+  console.log("   < " +  builderRoute  + " : " + builderRoute + ".build()" );
+}
+
+//------ called by AddRoute when it finds a static file. Gennerates a route based upon the files directory location and then mappes it to the fileloader.GetFile() in the routes map. 
+function AddFileRoute(_dirpath, _filename)
+{
+  var path = _dirpath.substring(prefs.getPublicRootDir().length) + "/"+_filename; 
+  console.log("   < " +  path);
+  routes[path] = fileloader.GetFile; 
+}
+
+
+//------- shows all current routes for debugging perposes. 
+function DisplayAllRoutes()
+{
+    for (p in routes)
+  {
+    console.log(p);  
+  }
+}
+
+
+
+
+//----------
+exports.BuildRoutes = BuildRoutes; 
+exports.route = route;
+
+
+/*
 //------- recursively searches for all Builder moduals in the root dir and then generates routes for them and mappes them to there Build() function to build the file upon request
 function GenerateRoutesForBuilders()
 {
@@ -71,9 +123,5 @@ function AddPagePath(_dirpath, _filename)
   builders[builderRoute] = require("./builders"+builderRoute); 
   routes[builderRoute] = builders[builderRoute].Build; 
   console.log("   < " +  builderRoute  + " : " + builderRoute + ".build()" );
-}
-
-
-//----------
-exports.BuildRoutes = BuildRoutes; 
-exports.route = route;
+  }
+  */

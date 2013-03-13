@@ -1,8 +1,19 @@
 //Index is a Builder Modual that constructs the Index.html page.  
-var fs          = require("fs");
-var prefs = require("../prefs"); 
-var dirParser   = require("../directoryparser"); 
+var fs          = null;
+var prefs 		= null; 
+var dirParser   = null; 
 var buildString = ""; 
+
+this.teststring = "Index builder test string"; 
+
+//------ gives the builder the nessisary moduals. more may be added later. 
+function Setup (_fs, _prefs, _dirParser)
+{
+	fs = _fs; 
+	prefs = _prefs;
+	dirParser = _dirParser;  
+}
+
 
 
 //------ called on request by router
@@ -35,4 +46,5 @@ function GetScriptPaths(_dirpath, _filename)
 }
 
 //-----  
+exports.Setup = Setup; 
 exports.Build = Build; 
