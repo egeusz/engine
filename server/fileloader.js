@@ -2,17 +2,6 @@ var fs = require("fs");
 
 var prefs = require("./prefs"); 
 
-//-------- Map of all accepted mime tipes for file extensions
-var MIMETypeMap = new Array(); 
-MIMETypeMap[".html"] 	= "text/html"; 
-MIMETypeMap[".css"] 	= "text/css"; 
-MIMETypeMap[".xml"] 	= "text/xml"; 
-MIMETypeMap[".js"] 		= "application/javascript"; 
-MIMETypeMap[".json"]	= "application/json"; 
-MIMETypeMap[".png"] 	= "image/png"; 
-MIMETypeMap[".jpg"] 	= "image/jpeg"; 
-MIMETypeMap[".gif"] 	= "image/gif"; 
-MIMETypeMap[".ico"] 	= "image/vnd.microsoft.icon"; 
 
 //------ loads the file at given path
 function GetFile(response, _path)
@@ -32,10 +21,10 @@ function ParseFileType(response, _path)
       	   	var filename = pathParts[pathParts.length-1]; 
       	   	var filenameParts =  filename.split(".");
       	   	var fileextension = "."+filenameParts[filenameParts.length-1]; 
-      	   	if (MIMETypeMap[fileextension] != null)
+      	   	if (prefs.GetMimeTypeFromExtension(fileextension) != "ERROR: extension for MimeType not found.")
       	   	{
       	   		console.log("<- serving file " + filename); 
-      	   		LoadFile(response, _path, MIMETypeMap[fileextension]); 
+      	   		LoadFile(response, _path, prefs.GetMimeTypeFromExtension(fileextension)); 
       	   	}
       	   	else
       	   	{
@@ -56,6 +45,7 @@ function LoadFile(response, _path, _MIMEtype)
 	response.writeHead(200, {"Content-Type": _MIMEtype });
   	//response.write(file); 
   	response.end(file);
+    return response; 
 }
 
 
@@ -66,6 +56,7 @@ function Error404(response)
   response.writeHead(200, {"Content-Type": "text/html"});
   response.write("<center><p>404 Server Error</p><p>The file you requested does exsist</p></cemter>"); 
   response.end();
+  return response; 
 } 
 
 //----------

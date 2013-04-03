@@ -12,12 +12,12 @@ function route(_path, response) {
   if (routes[_path] != null)
   {
     console.log("     request  -> " + _path);
-    routes[_path](response, _path); 
+    response = routes[_path](response, _path); 
   }
   else
   {
     console.log("request error -> " + _path);
-    fileloader.Error404(response); 
+    response = fileloader.Error404(response); 
   }
 }
 
@@ -57,21 +57,91 @@ function AddRoute(_dirpath, _filename)
 //------ called by AddRoute when it finds a Builder modual. Gennerates a route based upon the files directory location. It loads the modual to the builders list and then mappes it to the builders Build() function in the routes map. 
 function AddBuilderRoute(_dirpath, _filename, _nameparts)
 {
-  var path = "."+_dirpath.substring(prefs.getServerRootDir().length) + "/"+_filename; //"./server/public/dir1/dir2/" -> "./public/dir1/dir2"
-  var builderRoute = _dirpath.substring(prefs.getPublicRootDir().length) + "/"+ _nameparts[0]; 
+  var path = GenerateBuilderPath(_dirpath, _filename); //"./server/public/dir1/dir2/" -> "./public/dir1/dir2"
+  
   var builder = require(path); 
-  builder.Setup(fs, prefs, dirParser); 
+  builder.Setup( require("./router"), fs, prefs, dirParser); 
+  var builderRoute = GenerateBuilderRoute(_dirpath, _filename); 
   builders[builderRoute] = builder; 
   routes[builderRoute] = builders[builderRoute].Build; 
-  console.log("   < " +  builderRoute  + " : " + builderRoute + ".build()" );
+  console.log("   < " +  builderRoute  + " : " + path + ".build()" );
 }
 
 //------ called by AddRoute when it finds a static file. Gennerates a route based upon the files directory location and then mappes it to the fileloader.GetFile() in the routes map. 
 function AddFileRoute(_dirpath, _filename)
 {
-  var path = _dirpath.substring(prefs.getPublicRootDir().length) + "/"+_filename; 
-  console.log("   < " +  path);
-  routes[path] = fileloader.GetFile; 
+  var route = GenerateFileRoute(_dirpath, _filename); 
+  console.log("   < " +  route);
+  routes[route] = fileloader.GetFile; 
+}
+
+
+
+
+//----- Given a Builder name checks to see if its a Builder. Builders are named as [name].builder.js
+function isFileABuilder(_filename)
+{
+  var nameparts = _filename.split("."); 
+  if(nameparts[1] == "builder" && nameparts[2] == "js")
+  {
+    return true; 
+  }
+  else 
+  {
+    return false; 
+  }
+
+}
+
+
+//------- Given a File name and its directory path returns its path from server's perspective "./server/public/dir1/dir2/" + "file.png" -> "./public/dir1/dir2/file.png"
+function GenerateFilePath(_dirpath, _filename)
+{
+  return  "."+_dirpath.substring(prefs.getServerRootDir().length) + "/"+_filename; 
+}
+
+//------- Given a Builder name and its directory path returns its path from server's perspective "./server/public/dir1/dir2/" + "index.builder.js" -> "./public/dir1/dir2/index"
+function GenerateBuilderPath(_dirpath, _filename)
+{
+  var nameparts = _filename.split("."); 
+  if(isFileABuilder(_filename))
+  {
+    return "."+_dirpath.substring(prefs.getServerRootDir().length) + "/"+_filename; 
+  }
+  else 
+  {
+    return "ERROR: not a builder. Builders are named as [name].builder.js"; 
+  }
+}
+
+
+
+//------ Givien a File name and its directory path returns its route.  "./server/public/dirA/dirB" + "file.png" -> "/dirA/dirB/file.png"
+function GenerateFileRoute(_dirpath, _filename)
+{
+  return _dirpath.substring(prefs.getPublicRootDir().length) + "/"+_filename;
+}
+
+//------ Givien a Builder name and its directory path returns its route.  "./server/public/dirA/dirB" + "index.builder.js" -> "/dirA/dirB/index"
+function GenerateBuilderRoute(_dirpath, _filename)
+{
+  var nameparts = _filename.split("."); 
+  if(isFileABuilder(_filename))
+  {
+    return _dirpath.substring(prefs.getPublicRootDir().length) + "/"+ nameparts[0];
+  }
+  else 
+  {
+    return "ERROR: not a builder. Builders are named as [name].builder.js"; 
+  }
+}
+
+
+
+//------- Returns the builder at specified rout. 
+function GetBuilder(_builderRoute)
+{
+  return builders[_builderRoute]; 
 }
 
 
@@ -91,6 +161,12 @@ function DisplayAllRoutes()
 exports.BuildRoutes = BuildRoutes; 
 exports.route = route;
 
+exports.isFileABuilder        = isFileABuilder;
+exports.GenerateFilePath      = GenerateFilePath;
+exports.GenerateBuilderPath   = GenerateBuilderPath;
+exports.GenerateFileRoute     = GenerateFileRoute;
+exports.GenerateBuilderRoute  = GenerateBuilderRoute;
+exports.GetBuilder            = GetBuilder;
 
 /*
 //------- recursively searches for all Builder moduals in the root dir and then generates routes for them and mappes them to there Build() function to build the file upon request
